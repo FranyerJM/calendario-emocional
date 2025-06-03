@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendario Emocional Detallado - Fran & Rachel</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+    body {
+      background-color: #fff8f0; /* Fondo general tierno */
+      font-family: 'Segoe UI', sans-serif;
+      color: #333;
+    }
+    .phase-card {
+      padding: 1rem;
+      border-radius: 10px;
+      color: #333;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+      height: 100%; 
+    }
+    .phase-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+    .menstrual { background-color: #fde2e2; border-left: 5px solid #d98c8c; }
+    .folicular { background-color: #e2f0cb; border-left: 5px solid #a5c97a; }
+    .ovulacion { background-color: #fbe3c2; border-left: 5px solid #e9a253; }
+    .lutea { background-color: #d0e8f2; border-left: 5px solid #79b7d1; }
+    .card { /* Estilo general para las tarjetas de días */
+      border: none;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border-radius: 15px;
+    }
+    .container h1, .container .lead {
+        color: #5a3e2b;
+    }
+    .btn-primary {
+        background-color: #e9a253;
+        border-color: #e9a253;
+        border-radius: 20px; /* Botón más redondeado */
+        padding: 0.5rem 1.5rem;
+    }
+    .btn-primary:hover {
+        background-color: #d08c3a;
+        border-color: #d08c3a;
+    }
+    .modal-header {
+        border-bottom: 1px solid #eee;
+    }
+    .modal-title {
+        color: #5a3e2b;
+        font-weight: bold;
+    }
+    .modal-body h6 {
+        color: #e9a253;
+        margin-top: 1rem;
+        font-weight: bold;
+    }
+    .modal-body ul {
+        padding-left: 1.5rem;
+        list-style-type: '– ';
+    }
+    .modal-body ul li {
+        margin-bottom: 0.3rem;
+    }
+    .modal-content {
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .day-of-phase-title {
+        font-size: 0.9em;
+        color: #777;
+    }
+    /* Estilos para el formulario */
+    #cycleForm {
+      background-color: transparent; /* Sin fondo blanco */
+      border: none;
+      box-shadow: none;
+      padding: 1rem 0; /* Ajustar padding si es necesario */
+    }
+    .form-label {
+        font-size: 0.95em; /* Un poco más grande para legibilidad */
+        color: #5a3e2b;   /* Color del texto de las etiquetas */
+        margin-bottom: 0.3rem;
+        display: inline-flex; /* Para alinear ícono y texto */
+        align-items: center;
+    }
+    .form-label svg, .form-label span.phase-icon { /* Estilo para los íconos en etiquetas */
+        margin-right: 0.4em;
+        font-size: 1.1em; /* Ajusta el tamaño del emoji/ícono si es necesario */
+    }
+    .form-control {
+        border-radius: 10px; /* Entradas más redondeadas */
+        border: 1px solid #e9a253; /* Borde sutil con color temático */
+        background-color: #fffdf9; /* Fondo muy claro para las entradas */
+    }
+    .form-control:focus {
+        border-color: #d08c3a;
+        box-shadow: 0 0 0 0.2rem rgba(233, 162, 83, 0.25);
+        background-color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <div class="text-center mb-4">
+      <h1 class="display-5">Calendario Emocional</h1>
+      <p class="lead">Fran ❤️ Rachel</p>
+    </div>
+
+    <form id="cycleForm" class="mb-4">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label for="startDate" class="form-label">🗓️ Inicio del sangrado:</label>
+          <input type="date" class="form-control" id="startDate" required>
+        </div>
+        <div class="col-md-3 col-6">
+          <label for="cycleLength" class="form-label">🔄 Duración Ciclo (total días):</label>
+          <input type="number" class="form-control" id="cycleLength" placeholder="Ej: 28">
+        </div>
+        <div class="col-md-3 col-6">
+          <label for="bleedingDays" class="form-label"><span class="phase-icon">🩸</span>Días de Sangrado:</label>
+          <input type="number" class="form-control" id="bleedingDays" placeholder="Ej: 5">
+        </div>
+         <div class="col-md-3">
+            <button type="submit" class="btn btn-primary w-100 mt-3 mt-md-0">Generar</button>
+        </div>
+      </div>
+      <div class="row g-3 mt-2 align-items-end">
+        <div class="col-md-4 col-sm-6">
+          <label for="follicularDaysInput" class="form-label"><span class="phase-icon">🌱</span>Días Fase Folicular:</label>
+          <input type="number" class="form-control" id="follicularDaysInput" placeholder="Ej: 7">
+        </div>
+        <div class="col-md-4 col-sm-6">
+          <label for="ovulationDaysInput" class="form-label"><span class="phase-icon">💖</span>Días Fase Ovulación:</label>
+          <input type="number" class="form-control" id="ovulationDaysInput" placeholder="Ej: 5">
+        </div>
+        <div class="col-md-4 col-sm-12">
+          <label for="lutealDaysInput" class="form-label"><span class="phase-icon">🌙</span>Días Fase Lútea:</label>
+          <input type="number" class="form-control" id="lutealDaysInput" placeholder="Ej: 11">
+        </div>
+      </div>
+    </form>
+
+    <div id="calendar" class="row gy-4"></div>
+  </div>
+
+  <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTitle"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body" id="modalBody">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+
+// ----- INICIO DEL CÓDIGO JAVASCRIPT LÓGICO -----
+const phases = [
+  { // --- FASE MENSTRUAL ---
+    name: "Menstrual", class: "menstrual", icon: "🩸",
+    adviceGeneral: "Periodo de descanso y sensibilidad. Máxima paciencia y confort.",
+    dias: [
+      { // Día 1 (Menstrual)
+        adviceDia: "Hoy es el inicio, el cuerpo pide descanso absoluto. Prioriza su comodidad y tranquilidad.",
+        queHacer: ["Asegurar un ambiente muy calmado.", "Ofrecerle su bebida caliente favorita (infusión, caldo).", "Tener a mano una bolsa de agua caliente.", "Encargarse de todas las tareas posibles.", "Preguntar directamente qué necesita para estar más cómoda."],
+        queNoHacer: ["Planificar actividades, por mínimas que sean.", "Hacer ruido o generar estrés.", "Minimizar su malestar con frases como 'no es para tanto'."],
+        queEvitar: ["Cualquier tipo de presión.", "Conversaciones tensas o discusiones.", "Alimentos muy pesados o irritantes."],
+        queRegalar: ["Tiempo de calidad en silencio si lo desea.", "Un masaje suave en los pies o la espalda (si le apetece).", "Su snack de confort N°1."],
+        comoActuar: ["Con extrema delicadeza, paciencia infinita y mucho amor.", "Ser muy observador a sus señales no verbales.", "Anticiparse a sus necesidades básicas."],
+        queNoDecir: ["'¿Ya estás así otra vez?'", "'Anímate, no es tan grave.'", "'Mañana seguro estás mejor' (no presionar la recuperación)."],
+        frasesParaRachel: ["'Amor, estoy aquí para lo que sea que necesites. Tú solo descansa.'", "'No te preocupes por nada hoy, yo me encargo de todo.'", "'¿Te preparo un tecito o quieres algo especial para comer?'", "'Te amo muchísimo, mi vida. Aquí estoy contigo.'"]
+      },
+      { // Día 2 (Menstrual)
+        adviceDia: "El malestar puede ser igual o un poco menor. Sigue siendo un día para cuidarla mucho.",
+        queHacer: ["Mantener la ayuda con las tareas.", "Ofrecer compañía tranquila (ver una película, leer juntos).", "Pequeños detalles como su postre favorito.", "Validar sus emociones si se siente sensible."],
+        queNoHacer: ["Esperar que ya esté al 100%.", "Insistir en salir si no quiere.", "Restarle importancia a cómo se siente."],
+        queEvitar: ["Lugares concurridos o ruidosos.", "Situaciones que requieran mucha energía social."],
+        queRegalar: ["Una playlist de música relajante.", "Flores de colores suaves.", "Un libro o revista que le guste."],
+        comoActuar: ["Con la misma paciencia que ayer.", "Escuchar activamente si necesita desahogarse.", "Ofrecer abrazos reconfortantes si los busca."],
+        queNoDecir: ["'¿Todavía te sientes mal?'", "'A ver si te mejoras pronto para que hagamos [X plan]'.", "'No te dejes estar.'"],
+        frasesParaRachel: ["'¿Cómo amaneciste hoy, cariño? ¿Necesitas algo?'", "'Estoy aquí para mimarte.'", "'Si quieres hablar, soy todo oídos. Si prefieres silencio, también está perfecto.'", "'Eres fuerte y valiente.'"]
+      },
+      { // Día 3 (Menstrual)
+        adviceDia: "El malestar podría estar disminuyendo, pero la energía aún es baja. La paciencia y el apoyo siguen siendo clave.",
+        queHacer: ["Mantener un ambiente tranquilo.", "Ofrecer compañía relajada.", "Pequeños gestos de cariño.", "Preguntar si apetece algo ligero."],
+        queNoHacer: ["Presionarla para 'ser productiva'.", "Minimizar su sentir.", "Hacer planes exigentes."],
+        queEvitar: ["Tensión.", "Exceso de interacciones sociales si no desea.", "Cambios bruscos."],
+        queRegalar: ["Revista o libro ligero.", "Infusión favorita.", "Snack saludable."],
+        comoActuar: ["Con suavidad y comprensión.", "Escucha atenta.", "Adaptarse a su ritmo."],
+        queNoDecir: ["'¿No te aburres?'", "'Ya deberías sentirte mejor.'"],
+        frasesParaRachel: ["'¿Cómo te sientes hoy, mi vida?'", "'Tómate tu tiempo, estoy aquí.'", "'Admiro tu fortaleza.'"]
+      },
+      { // Día 4 (Menstrual)
+        adviceDia: "Leve mejoría en energía. Fomentar descanso, abierta a actividades muy suaves si ella propone.",
+        queHacer: ["Paseo muy corto en casa si quiere.", "Ayuda con tarea ligera si tiene ganas.", "Conversaciones positivas.", "Buena hidratación y nutrición."],
+        queNoHacer: ["Forzarla a moverse.", "Esperar rutina normal.", "Subestimar recuperación."],
+        queEvitar: ["Lugares concurridos.", "Esfuerzo prolongado.", "Saltarse comidas."],
+        queRegalar: ["Fruta fresca.", "Documental o comedia ligera.", "Pequeño detalle."],
+        comoActuar: ["Optimismo cauteloso.", "Flexible y receptivo.", "Celebrar pequeñas mejorías."],
+        queNoDecir: ["'¡Ya estás como nueva!' (si no es así).", "'Aprovecha para hacer [X tarea demandante]'."],
+        frasesParaRachel: ["'Noto más chispa hoy, me alegra.'", "'Paso a paso, amor.'", "'¿Algo te haría sentir bien hoy?'"]
+      },
+      { // Día 5 (Menstrual - Sangrado disminuyendo)
+        adviceDia: "Energía puede empezar a regresar notablemente. Día para actividades suaves y reconfortantes.",
+        queHacer: ["Paseo corto al aire libre si hay ánimo.", "Planear algo agradable y no exigente.", "Cocinar juntos algo nutritivo.", "Escuchar sus planes."],
+        queNoHacer: ["Presión para retomar todo de golpe.", "Dar por sentado recuperación total.", "Ignorar si necesita descanso."],
+        queEvitar: ["Actividades extenuantes.", "Estrés innecesario.", "Saltarse comidas."],
+        queRegalar: ["Flores frescas.", "Ingredientes para postre favorito (y hacerlo juntos).", "Vela aromática suave."],
+        comoActuar: ["Optimismo y apoyo.", "Flexible a fluctuaciones de energía.", "Celebrar su recuperación."],
+        queNoDecir: ["'¡Ya era hora!'", "'Ahora sí podemos hacer todo lo pendiente.'"],
+        frasesParaRachel: ["'Alegría verte con más energía. ¿Algo especial que te gustaría hacer hoy, con calma?'", "'Tu bienestar es mi prioridad.'"]
+      },
+      { // Día 6 (Menstrual - Transición a Folicular)
+        adviceDia: "Sangrado podría estar finalizando. Energía suele empezar a volver. Un respiro.",
+        queHacer: ["Proponer algo muy suave (paseo corto).", "Hablar de planes ligeros.", "Celebrar discretamente que se siente mejor.", "Preguntar qué le apetece."],
+        queNoHacer: ["Presionarla a retomar todo.", "Dar por sentado recuperación total."],
+        queEvitar: ["Actividades extenuantes.", "Compromisos sociales grandes si no está lista."],
+        queRegalar: ["Planta pequeña 🌱.", "Su comida favorita.", "Detalle que haga sonreír."],
+        comoActuar: ["Optimismo, sin prisas.", "Flexible a niveles de energía.", "Mostrar alegría por su recuperación."],
+        queNoDecir: ["'¡Ya era hora!'", "'Ahora sí podemos hacer todo.'"],
+        frasesParaRachel: ["'Me alegra verte con más energía hoy.'", "'Poco a poco, a tu ritmo.'"]
+      },
+      { // Día 7 (Menstrual - Sangrado mínimo o ausente)
+        adviceDia: "Energía sigue en ascenso. Consolidar recuperación y disfrutar actividades placenteras.",
+        queHacer: ["Actividades suaves juntos.", "Planificar salida relajada para el finde.", "Asegurar descanso nocturno.", "Fomentar comidas nutritivas (hierro)."],
+        queNoHacer: ["Olvidar que el cuerpo aún se recupera.", "Volver a rutina exigente de golpe."],
+        queEvitar: ["Ejercicio intenso si no está acostumbrada post-periodo.", "Descuidar sueño."],
+        queRegalar: ["Libro de autor que le guste.", "Invitación a café tranquilo.", "Algo para un hobby."],
+        comoActuar: ["Atención continua a su bienestar.", "Animándola, respetando límites.", "Comunicación abierta."],
+        queNoDecir: ["'¿Si ya no sangras, por qué sigues cansada?'", "'Deberías estar al 100%.'"],
+        frasesParaRachel: ["'¿Cómo te sientes? ¿Pequeña aventura o relax?'", "'Me encanta verte recuperar tu vitalidad.'"]
+      },
+      { // Día 8 (Menstrual - Transición clara a folicular)
+        adviceDia: "Sangrado muy leve o terminado. Energía cercana a niveles normales. Transición a fase folicular.",
+        queHacer: ["Retomar rutina gradualmente.", "Planificar actividades que disfruten.", "Hablar sobre proyectos.", "Ejercicio moderado si hay ganas."],
+        queNoHacer: ["Ignorar si necesita más tiempo para recuperarse.", "Presionarla para compensar 'tiempo perdido'."],
+        queEvitar: ["Fatiga excesiva.", "Dietas restrictivas o ejercicio extremo justo ahora."],
+        queRegalar: ["Algo motivador para fase folicular.", "Planta que simbolice crecimiento.", "Cena para celebrar."],
+        comoActuar: ["Entusiasmo por nueva fase.", "Apoyando sus iniciativas.", "Recordar lo aprendido."],
+        queNoDecir: ["'Por fin se acabó.'", "'Ahora no tienes excusa para no hacer [X].'"],
+        frasesParaRachel: ["'¡Bienvenida a una nueva etapa! ¿Qué celebramos?'", "'Tu energía vuelve con fuerza, ¡me encanta!'"]
+      },
+      { // Día 9 (Menstrual - Opcional para ciclos con sangrado más largo)
+        adviceDia: "Si el sangrado se extiende, continuar con cuidados y apoyo. La energía puede ser aún variable.",
+        queHacer: ["Mantener un ambiente de apoyo y comprensión.", "Ofrecer ayuda con tareas si es necesario.", "Actividades muy ligeras si ella lo desea.", "Priorizar su comodidad."],
+        queNoHacer: ["Mostrar impaciencia por el fin del sangrado.", "Minimizar su experiencia si aún hay malestar."],
+        queEvitar: ["Presión para 'estar bien ya'.", "Actividades que demanden mucha energía física."],
+        queRegalar: ["Un baño caliente relajante.", "Su snack favorito sin culpas.", "Tiempo de descanso extra."],
+        comoActuar: ["Paciente, comprensivo y atento.", "Validando sus sentimientos y necesidades.", "Ofreciendo confort continuo."],
+        queNoDecir: ["'¿Aún sigues con eso?'", "'Deberías hacer un esfuerzo por animarte.'"],
+        frasesParaRachel: ["'Estoy aquí para lo que necesites, cariño. Tu ritmo es el que importa.'", "'No te presiones, descansa lo que haga falta.'"]
+      },
+      { // Día 10 (Menstrual - Opcional para ciclos con sangrado muy largo)
+        adviceDia: "Últimos rastros de sangrado o ya finalizado. La energía debería estar en claro ascenso.",
+        queHacer: ["Celebrar el cambio de fase.", "Planificar actividades gradualmente más energéticas.", "Fomentar una nutrición que reponga energías.", "Escuchar sus ideas para la nueva etapa."],
+        queNoHacer: ["Olvidar que el cuerpo ha pasado por un proceso demandante.", "Apresurar la vuelta a la 'normalidad' total."],
+        queEvitar: ["Exigencias físicas o mentales extremas de inmediato.", "Descuidar la hidratación o el descanso adecuado."],
+        queRegalar: ["Algo que simbolice frescura y renovación.", "Una comida especial para marcar el cambio.", "Apoyo para sus nuevos proyectos."],
+        comoActuar: ["Optimista y alentador.", "Celebrando su bienestar y energía renovada.", "Listo para la nueva dinámica."],
+        queNoDecir: ["'¡Al fin! Ya estaba preocupado.'", "'Ahora sí, a ponerse al día con todo.'"],
+        frasesParaRachel: ["'¡Qué maravilla verte florecer de nuevo, amor!'", "'Lista para conquistar el mundo (o al menos, nuestros planes). ¿Qué se te antoja?'"]
+      }
+    ]
+  },
+  { // --- FASE FOLICULAR ---
+    name: "Folicular", class: "folicular", icon: "🌱",
+    adviceGeneral: "Energía en aumento, optimismo y creatividad. ¡Aprovechen para conectar y crear!",
+    dias: [ // Extendido a 14 días
+      { // Día 1 (Folicular - Post-menstrual)
+        adviceDia: "La energía regresa. Ideal para retomar actividades gradualmente y planificar.",
+        queHacer: ["Proponer actividades que le gusten, no muy demandantes.", "Escuchar sus nuevas ideas con entusiasmo.", "Planificar salida divertida para finde.", "Ejercicio suave juntos."],
+        queNoHacer: ["Agobiarla con demasiados planes.", "Ignorar su nuevo impulso.", "Ser pesimista."],
+        queEvitar: ["Rutina aburrida si busca estímulos.", "Criticar sus ideas creativas."],
+        queRegalar: ["Cuaderno bonito 🎨.", "Entradas a evento de interés.", "Implementos para hobby."],
+        comoActuar: ["Entusiasmo, apoyo, participación.", "Compañero de aventuras.", "Interés genuino."],
+        queNoDecir: ["'¿Segura que puedes con eso?'", "'Suena muy complicado.'"],
+        frasesParaRachel: ["'¡Qué bien te veo! Tu energía es contagiosa.'", "'Esa idea suena genial, ¿cómo ayudo?'"]
+      },
+      { // Día 2 (Folicular)
+        adviceDia: "Energía subiendo, ánimo mejora. Moverse un poco más, retomar actividades placenteras.",
+        queHacer: ["Caminata ligera o actividad física suave.", "Retomar hobbies.", "Conversaciones alegres y optimistas.", "Ayudar a organizar ideas."],
+        queNoHacer: ["Presionar con demasiadas actividades.", "Indiferencia a su entusiasmo.", "Criticar ideas incipientes."],
+        queEvitar: ["Ambientes caóticos que frenen impulso positivo.", "Volver de golpe a rutina exigente."],
+        queRegalar: ["Música alegre.", "Café especial para planear.", "Materiales para proyecto creativo."],
+        comoActuar: ["Entusiasmo y apoyo.", "Escuchando activamente.", "Compañero para actividades divertidas."],
+        queNoDecir: ["'No te emociones demasiado rápido.'", "'¿Ya se te olvidó cómo te sentías?'"],
+        frasesParaRachel: ["'¡Qué bien se siente tu energía positiva! ¿Qué te apetece?'", "'Me encanta verte con tantas ganas.'"]
+      },
+      { // Día 3 (Folicular)
+        adviceDia: "El optimismo y la claridad mental suelen estar en alza. Ideal para planificar, aprender cosas nuevas o socializar un poco.",
+        queHacer: ["Proponer una actividad social ligera (ver a amigos, una comida familiar).", "Empezar juntos un nuevo proyecto pequeño o aprender algo nuevo (un curso corto, un documental).", "Tener conversaciones estimulantes y compartir ideas.", "Planificar una salida especial para el fin de semana."],
+        queNoHacer: ["Limitar su deseo de interactuar o aprender.", "Ser negativo o excesivamente crítico con sus iniciativas.", "Dejarla sola con toda la carga de planificación si es algo conjunto."],
+        queEvitar: ["La monotonía si ella busca nuevos estímulos.", "Personas o situaciones que le resten energía o la desanimen.", "Posponer demasiado las cosas que le ilusionan."],
+        queRegalar: ["Un libro sobre un tema que le interese.", "Entradas para una charla, taller o exposición.", "Una invitación a comer a un sitio nuevo y agradable."],
+        comoActuar: ["Participativo, curioso y abierto a nuevas experiencias.", "Como un buen compañero de equipo en los planes.", "Animándola a explorar sus intereses."],
+        queNoDecir: ["'¿Otra idea nueva? ¿No crees que ya tienes suficiente con lo que haces?'", "'Eso es demasiado complicado para nosotros.'", "'Mejor nos quedamos en casa.' (si ella quiere salir)."],
+        frasesParaRachel: ["'Tu mente está brillante hoy, ¡me encanta cómo piensas!'", "'Me apunto a ese plan, suena divertido y diferente.'", "'Aprovechemos esta claridad para organizar [X cosa] juntos.'", "'Me inspira ver tu curiosidad y ganas de aprender.'"]
+      },
+      { // Día 4 (Folicular)
+        adviceDia: "La energía física y mental suele estar en un muy buen nivel. Momento perfecto para la acción, la creatividad y la productividad.",
+        queHacer: ["Abordar tareas que requieran concentración y energía.", "Realizar actividad física más vigorosa si le gusta.", "Trabajar en proyectos creativos o profesionales con enfoque.", "Tener una lluvia de ideas para proyectos futuros."] ,
+        queNoHacer: ["Frenar su productividad si está en racha.", "Distraerla innecesariamente si está concentrada.", "Ser pasivo si ella busca un compañero activo para sus iniciativas."],
+        queEvitar: ["La procrastinación si hay metas claras.", "El desorden que pueda obstaculizar su flujo de trabajo o creatividad.", "Caer en la inactividad si ella se siente dinámica."],
+        queRegalar: ["Herramientas o software que faciliten sus proyectos.", "Ropa cómoda y funcional para sus actividades.", "Un almuerzo energético y saludable para mantener el ritmo."] ,
+        comoActuar: ["Como un apoyo eficiente y motivador.", "Respetando su concentración pero disponible para colaborar.", "Celebrando sus avances y logros."],
+        queNoDecir: ["'¿No te cansas?' (en tono de reproche).", "'Más despacio, que no hay prisa.' (si ella está motivada).", "'Yo no tengo tanta energía como tú.' (si suena a queja)."],
+        frasesParaRachel: ["'¡Estás imparable hoy! Admiro tu enfoque y determinación.'", "'¿En qué puedo ayudarte para que sigas avanzando así de bien?'", "'Es genial verte tan metida en tus proyectos. ¡Sigue así!'", "'Tu productividad es inspiradora.'"]
+      },
+      { // Día 5 (Folicular)
+        adviceDia: "Energía estable y alta, ideal para socializar, disfrutar de actividades al aire libre y avanzar en objetivos.",
+        queHacer: ["Organizar una reunión con amigos o una salida divertida.", "Disfrutar de la naturaleza, hacer deporte al aire libre.", "Avanzar significativamente en proyectos personales o compartidos.", "Tener conversaciones importantes con claridad y confianza."],
+        queNoHacer: ["Aislarla si busca compañía.", "Poner obstáculos a sus planes si son razonables y le entusiasman.", "Ser excesivamente cauteloso si ella se siente audaz (dentro de lo razonable)."],
+        queEvitar: ["El sedentarismo excesivo si ella se siente activa.", "Ambientes negativos que puedan afectar su buen ánimo.", "Perder oportunidades por indecisión si se siente segura."],
+        queRegalar: ["Una experiencia compartida (entradas a un concierto, un evento deportivo).", "Equipamiento para alguna actividad al aire libre que le guste.", "Un detalle que celebre su vitalidad."],
+        comoActuar: ["Alegre, sociable y dispuesto a compartir.", "Como un compañero entusiasta en sus actividades.", "Confiando en su buen juicio y energía."],
+        queNoDecir: ["'Prefiero quedarme en casa.' (si ella tiene un plan social emocionante).", "'¿No es demasiado arriesgado?' (si es algo que ella ha evaluado bien).", "'Ya hiciste mucho ayer, descansa hoy.' (si ella quiere seguir activa)."],
+        frasesParaRachel: ["'¡Disfrutemos de este día tan estupendo juntos! ¿Qué aventura nos espera?'", "'Me encanta tu vitalidad, es contagiosa.'", "'Confío en ti y en tu energía para lograr lo que te propones.'", "'Hagamos de hoy un día memorable.'"]
+      },
+      { // Día 6 (Folicular)
+        adviceDia: "Energía alta, sociabilidad y deseo de conexión en aumento. Ovulación se aproxima.",
+        queHacer: ["Prestar más atención a las señales de conexión emocional y física.", "Sugerir planes que fomenten la intimidad y la conversación (una cena tranquila, un paseo al atardecer).", "Ser más expresivo con el afecto y los cumplidos.", "Escuchar con atención si comparte sentimientos más profundos.", "Planear algo especial para el fin de semana, quizás con un toque romántico."],
+        queNoHacer: ["Ser distante o demasiado práctico si ella busca más conexión.", "Ignorar sus intentos de acercamiento o coqueteo.", "Priorizar tareas sobre momentos de calidad juntos si ella lo sugiere.", "Restarle importancia a pequeños detalles románticos."],
+        queEvitar: ["La rutina fría o distante.", "Conversaciones puramente logísticas sin espacio para lo emocional.", "Descuidar los pequeños detalles románticos.", "Ambientes muy ruidosos o estresantes si buscan conectar."],
+        queRegalar: ["Un detalle que anticipe el romanticismo (una vela para una cena, su vino favorito).", "Música que invite a la relajación y la conexión.", "Una nota escrita a mano expresando cariño.", "Flores o un pequeño chocolate."],
+        comoActuar: ["Más atento, cariñoso y receptivo.", "Observando y respondiendo a sus cambios sutiles de humor hacia la afectividad.", "Preparando el terreno para la fase ovulatoria con gestos de aprecio.", "Juguetón y cómplice."],
+        queNoDecir: ["'Hoy estoy muy ocupado para eso.' (si ella propone un momento de conexión).", "'No te pongas sentimental ahora.'", "Minimizar la importancia de la conexión emocional.", "'¿Por qué de repente tan cariñosa?' (incluso si es con sorpresa)."],
+        frasesParaRachel: ["'Me siento especialmente conectado contigo hoy. ¿Tú también?'", "'Estás muy guapa hoy, hay algo especial en tu mirada.'", "'Me apetece mucho pasar un rato tranquilo y especial contigo.'", "'Estoy deseando que lleguen los próximos días para estar aún más cerca.'"]
+      },
+      { // Día 7 (Folicular)
+        adviceDia: "Energía y optimismo se mantienen. Continuar proyectos y disfrutar socialmente.",
+        queHacer: ["Continuar con proyectos que requieran enfoque y energía.", "Participar en actividades sociales que le resulten agradables y divertidas.", "Fomentar la comunicación abierta y la expresión de ideas.", "Disfrutar de hobbies o intereses que le aporten satisfacción y alegría.", "Hacer ejercicio moderado o una actividad física que disfruten juntos."],
+        queNoHacer: ["Caer en la monotonía si busca estímulos y variedad.", "Criticar sus iniciativas o su buen humor.", "Descuidar la importancia de la conexión y el apoyo mutuo en los proyectos.", "Ser pasivo si ella propone planes activos."],
+        queEvitar: ["Ambientes muy pasivos si ella está activa.", "Situaciones que puedan generar frustración innecesaria o discusiones triviales.", "Dejar pasar oportunidades para conectar o compartir ideas y risas.", "Exceso de aislamiento si ella busca compañía."],
+        queRegalar: ["Un detalle relacionado con sus hobbies o proyectos actuales.", "Una invitación a una actividad que ambos disfruten (cine, teatro, deporte).", "Un cumplido sincero sobre su energía o sus ideas.", "Un almuerzo o cena en un lugar agradable para celebrar los avances."],
+        comoActuar: ["Positivo, colaborador y atento a sus intereses.", "Fomentando un ambiente de creatividad y bienestar.", "Siendo un buen compañero en sus planes y actividades.", "Animándola a seguir adelante con sus metas."],
+        queNoDecir: ["'¿No te cansas de estar tan activa?'", "'Relájate un poco, siempre estás haciendo algo.' (si ella lo disfruta).", "Comentarios que puedan sonar a queja sobre su nivel de energía.", "'Eso no va a funcionar.' (sin ofrecer alternativas)."],
+        frasesParaRachel: ["'Admiro tu constancia y tu buen ánimo, ¡es genial!'", "'Sigamos aprovechando esta buena racha. ¿Qué te apetece hacer?'", "'Me encanta ver cómo disfrutas de tus actividades.'", "'Tu entusiasmo es una inspiración.'"]
+      },
+      { // Día 8 (Folicular)
+        adviceDia: "Confianza y comunicación elevadas. Conversaciones importantes o socializar.",
+        queHacer: ["Abordar temas que requieran claridad mental y asertividad (si es necesario y el ambiente es propicio).", "Planificar eventos sociales o reuniones si le apetece.", "Expresar pensamientos y sentimientos de forma abierta y constructiva.", "Disfrutar de interacciones estimulantes y conversaciones profundas.", "Ofrecer y pedir feedback de manera respetuosa."],
+        queNoHacer: ["Evitar conversaciones necesarias por temor a un conflicto inexistente.", "Aislarse si ella busca conexión social o intelectual.", "Subestimar su capacidad para manejar situaciones complejas o discusiones maduras.", "Invalidar sus opiniones o sentimientos."],
+        queEvitar: ["Malentendidos por falta de comunicación clara.", "Retraimiento social si no es deseado.", "Ambientes que coarten la libertad de expresión o el debate sano.", "Interrupciones constantes si está tratando de expresar algo importante."],
+        queRegalar: ["Un libro sobre comunicación, desarrollo personal o un tema que le apasione intelectualmente (si le interesa).", "Una salida a un lugar con buen ambiente para conversar (cafetería, parque tranquilo).", "Tu atención plena y escucha activa durante una conversación importante.", "Un juego de mesa que estimule la estrategia o la conversación."],
+        comoActuar: ["Comunicativo, asertivo y respetuoso.", "Fomentando el diálogo y la comprensión mutua.", "Confiando en su criterio y capacidad de expresión.", "Dispuesto a escuchar y a ser escuchado."],
+        queNoDecir: ["'Mejor no hablemos de eso ahora.' (si ella quiere y el momento es adecuado).", "'Siempre quieres tener la razón.' (en tono acusatorio).", "Invalidar sus opiniones o sentimientos con frases como 'estás exagerando'.", "'No entiendo por qué le das tanta importancia a eso.'"],
+        frasesParaRachel: ["'Me siento cómodo hablando contigo de cualquier tema.'", "'Admiro tu claridad y tu forma de expresar las cosas.'", "'Valoro mucho nuestras conversaciones. ¿Hay algo que te gustaría compartir?'", "'Confío plenamente en tu perspectiva.'"]
+      },
+      { // Día 9 (Folicular)
+        adviceDia: "Cerca del final de la fase, energía óptima. Concluir tareas, disfrutar actividad física.",
+        queHacer: ["Concluir tareas pendientes antes de la transición a la ovulación.", "Disfrutar de actividad física que le guste y le dé energía.", "Realizar actividades que requieran planificación y ejecución final.", "Mantener una actitud positiva y proactiva, enfocada en finalizar ciclos.", "Revisar metas a corto plazo y celebrar los logros."],
+        queNoHacer: ["Dejar todo para último momento si se acerca la ovulación y quiere tener cosas resueltas.", "Descuidar el bienestar físico pensando que la energía es ilimitada.", "Ser pasivo si ella tiene metas que quiere alcanzar antes de cambiar de fase.", "Empezar proyectos muy grandes que no puedan concluirse pronto."],
+        queEvitar: ["El estrés por acumulación de tareas sin finalizar.", "El sedentarismo si se siente con ganas de moverse y liberar energía.", "La procrastinación en proyectos importantes que estén por terminar.", "Distracciones que impidan cerrar ciclos pendientes."],
+        queRegalar: ["Equipamiento deportivo si le gusta hacer ejercicio o algo para su actividad física preferida.", "Una agenda o planificador bonito para organizar sus ideas y próximos pasos.", "Un reconocimiento verbal o un pequeño detalle por sus logros y esfuerzos recientes.", "Una comida energética y saludable para mantener el ritmo."],
+        comoActuar: ["Organizado, motivador y eficiente.", "Ayudando a concretar planes y alcanzar metas finales.", "Celebrando los avances y la productividad.", "Enfocado en el cierre y la preparación para la siguiente etapa."],
+        queNoDecir: ["'Ya tendrás tiempo para eso después.' (si es algo importante para ella terminar ahora).", "'No te esfuerces tanto, ya casi acaba la semana/fase.' (si disfruta de su actividad).", "Minimizar sus logros o el esfuerzo invertido.", "'¿Para qué te apuras tanto?'"],
+        frasesParaRachel: ["'¡Estás haciendo un trabajo increíble con [proyecto/tarea]!'", "'Aprovechemos esta energía para terminar lo que tenemos pendiente.'", "'Me impresiona tu capacidad para hacer tantas cosas y tan bien.'", "'Estoy aquí para apoyarte a alcanzar tus metas.'"]
+      },
+      { // Día 10 (Folicular)
+        adviceDia: "La creatividad puede estar en un punto alto. Buen día para brainstorming o iniciar proyectos artísticos.",
+        queHacer: ["Fomentar la expresión creativa.", "Proponer actividades artísticas o manuales.", "Visitar lugares inspiradores (museos, naturaleza).", "Escuchar música que estimule la creatividad."],
+        queNoHacer: ["Limitar su necesidad de expresarse.", "Criticar intentos creativos.", "Imponer estructuras rígidas si busca fluidez."],
+        queEvitar: ["Ambientes monótonos o poco estimulantes.", "Presión por resultados 'perfectos'.", "Falta de materiales si quiere crear algo."],
+        queRegalar: ["Materiales de arte.", "Un libro sobre su artista favorito.", "Entradas a una exposición o concierto."],
+        comoActuar: ["Inspirador y alentador.", "Apreciando su visión única.", "Facilitando los medios para su expresión."],
+        queNoDecir: ["'Eso es un poco raro, ¿no?'", "'No creo que tengas talento para eso.'", "'Concéntrate en cosas más serias.'"],
+        frasesParaRachel: ["'¡Qué idea tan original! Me encanta tu creatividad.'", "'Tienes una forma única de ver el mundo, es fascinante.'", "'Estoy aquí para apoyarte en tus exploraciones artísticas.'"]
+      },
+      { // Día 11 (Folicular)
+        adviceDia: "Energía social aún fuerte. Ideal para networking, colaboraciones o actividades en grupo.",
+        queHacer: ["Organizar o asistir a reuniones sociales.", "Participar en actividades de equipo.", "Conectar con nuevas personas.", "Compartir ideas y proyectos con otros."],
+        queNoHacer: ["Aislarla si desea interactuar.", "Ser competitivo en lugar de colaborativo.", "Desaprovechar oportunidades de conexión."],
+        queEvitar: ["Conflictos innecesarios en grupos.", "Personas que drenen su energía positiva.", "Timidez excesiva si hay oportunidades valiosas."],
+        queRegalar: ["Una invitación a un evento social.", "Un libro sobre trabajo en equipo o liderazgo (si es de su interés).", "Presentarle a alguien que pueda ser un contacto valioso."],
+        comoActuar: ["Sociable y buen conector.", "Fomentando la colaboración y el espíritu de equipo.", "Abierto a nuevas relaciones y experiencias."],
+        queNoDecir: ["'Prefiero que nos quedemos solos.' (si ella quiere socializar).", "'Esa gente no me cae bien.' (sin una buena razón).", "'No necesitas conocer a más personas.'"],
+        frasesParaRachel: ["'Eres el alma de la fiesta, ¡todos disfrutan tu compañía!'", "'Me encanta cómo te conectas con la gente.'", "'Hagamos algo divertido en grupo hoy.'"]
+      },
+      { // Día 12 (Folicular)
+        adviceDia: "La planificación a largo plazo y la visualización de metas pueden ser muy efectivas hoy.",
+        queHacer: ["Dedicar tiempo a planificar el futuro (viajes, proyectos).", "Crear un vision board o mapa de sueños.", "Investigar sobre temas que le interesen para el futuro.", "Tener conversaciones constructivas sobre aspiraciones conjuntas."],
+        queNoHacer: ["Descartar sus sueños o ideas a largo plazo.", "Ser excesivamente pragmático si ella está en modo visionario.", "Dejar que el miedo al futuro opaque el entusiasmo."],
+        queEvitar: ["Negatividad o pesimismo sobre el futuro.", "Falta de apoyo a sus ambiciones.", "Distracciones que impidan la concentración en la planificación."],
+        queRegalar: ["Una libreta bonita para anotar sus planes y sueños.", "Un libro inspirador sobre alcanzar metas.", "Tiempo dedicado exclusivamente a hablar y soñar juntos sobre el futuro."],
+        comoActuar: ["Soñador y planificador junto a ella.", "Apoyando sus visiones y ayudando a trazar caminos.", "Optimista y motivador."],
+        queNoDecir: ["'Eso es imposible.'", "'Seamos realistas.' (en tono desalentador).", "'Ya veremos qué pasa.' (con indiferencia)."],
+        frasesParaRachel: ["'Me encanta soñar y planificar nuestro futuro contigo.'", "'Creo firmemente que puedes lograr todo lo que te propongas.'", "'¿Cuáles son tus grandes sueños para los próximos años? Quiero escucharlos todos.'"]
+      },
+      { // Día 13 (Folicular)
+        adviceDia: "Energía física aún disponible para deportes o actividades al aire libre. Disfrutar del movimiento.",
+        queHacer: ["Practicar su deporte favorito.", "Ir de excursión o dar un largo paseo por la naturaleza.", "Probar una nueva actividad física juntos.", "Disfrutar del sol y el aire fresco."],
+        queNoHacer: ["Presionarla a hacer ejercicio si no le apetece.", "Elegir actividades demasiado extremas si no está acostumbrada.", "Olvidar la hidratación y protección solar."],
+        queEvitar: ["Sedentarismo si tiene ganas de moverse.", "Lesiones por sobreesfuerzo.", "Mal tiempo que arruine los planes al aire libre (tener plan B)."],
+        queRegalar: ["Ropa deportiva cómoda y bonita.", "Una botella de agua reutilizable con estilo.", "Un accesorio para su deporte favorito."],
+        comoActuar: ["Compañero de aventuras deportivas.", "Animándola y disfrutando del ejercicio juntos.", "Cuidando su bienestar físico durante la actividad."],
+        queNoDecir: ["'Te vas a cansar muy rápido.'", "'Yo soy mucho mejor que tú en esto.'", "'El ejercicio es aburrido.'"],
+        frasesParaRachel: ["'¡Vamos a mover el cuerpo y disfrutar del día!'", "'Admiro tu energía y tu fuerza.'", "'Hacer ejercicio contigo es mucho más divertido.'"]
+      },
+      { // Día 14 (Folicular - Transición a Ovulación)
+        adviceDia: "Energía en su punto, posible aumento de sociabilidad y cariño. Ovulación inminente.",
+        queHacer: ["Planear cita especial o salida romántica.", "Expresar admiración y halagos.", "Conversaciones íntimas y conectadas.", "Ser espontáneo y juguetón."],
+        queNoHacer: ["Indiferencia a señales de apertura.", "Evitar contacto físico si ella lo busca."],
+        queEvitar: ["Discusiones que apaguen buen ánimo.", "Desconexión emocional."],
+        queRegalar: ["Flores 💐 o detalle romántico.", "Cena en lugar favorito.", "Algo que la haga sentir guapa."],
+        comoActuar: ["Atento, cariñoso, verbalmente afectivo.", "Coquetear, mantener la chispa.", "Escucharla con atención."],
+        queNoDecir: ["Comentarios que la hagan dudar de sí misma.", "Ignorar sus cumplidos."],
+        frasesParaRachel: ["'Estás especialmente radiante hoy.'", "'Tengo muchas ganas de pasar tiempo contigo.'", "'Siento una conexión muy especial.'"]
+      }
+    ]
+  },
+  { // --- FASE DE OVULACIÓN ---
+    name: "Ovulación", class: "ovulacion", icon: "💖",
+    adviceGeneral: "Pico de energía, libido y sociabilidad. Días para la conexión íntima y la diversión.",
+    dias: [ // Extendido a 7 días
+      { // Día 1 (Ovulación)
+        adviceDia: "¡Es el momento cumbre! Se sentirá más comunicativa, sexy y sociable. Conexión al máximo.",
+        queHacer: ["Priorizar el tiempo de calidad juntos, mucha conexión física y emocional.", "Decirle lo hermosa y deseable que es.", "Planear una velada romántica o una aventura divertida.", "Escucharla atentamente, suele estar más abierta a compartir."],
+        queNoHacer: ["Estar distante o distraído.", "Criticar o empezar discusiones.", "Ignorar sus necesidades de afecto o validación."],
+        queEvitar: ["El aislamiento o la rutina monótona.", "Situaciones de estrés que corten el ambiente.", "Hacerla sentir poco atractiva."],
+        queRegalar: ["Lencería (si es apropiado y le gusta).", "Una cena preparada por ti 🕯️.", "Una experiencia para dos (un masaje en pareja, una escapada corta)."],
+        comoActuar: ["Muy afectuoso, apasionado, atento y detallista.", "Conquistador y juguetón.", "Hacerla sentir como la persona más especial del mundo."],
+        queNoDecir: ["'Hoy no tengo ganas.' (si ella inicia el acercamiento).", "Cualquier comentario negativo sobre su apariencia o deseo."],
+        frasesParaRachel: ["'Me vuelves loco/a, estás increíblemente hermosa hoy.' 😍", "'No puedo esperar a estar contigo.'", "'Siento que hoy estamos más conectados que nunca.'", "'Dime qué te apetece, tus deseos son órdenes.'"]
+      },
+      { // Día 2 (Ovulación)
+        adviceDia: "La energía y el deseo de conexión siguen al máximo. Día ideal para la comunicación abierta, la diversión y la intimidad.",
+        queHacer: ["Continuar fomentando la conexión emocional y física.", "Proponer actividades que ambos disfruten y que permitan la interacción (bailar, cocinar juntos una cena especial, juegos de mesa).", "Ser muy expresivo con el afecto y la admiración.", "Escuchar activamente sus pensamientos y sentimientos; suele ser un momento de gran apertura."],
+        queNoHacer: ["Reprimir la espontaneidad o la alegría.", "Ser crítico o distante.", "Dar por sentada su disposición o buen humor; sigue siendo importante nutrir la conexión."],
+        queEvitar: ["Conflictos innecesarios o discusiones triviales que puedan romper la magia del momento.", "El aislamiento o la falta de comunicación.", "Ignorar sus necesidades de atención o validación."],
+        queRegalar: ["Una experiencia compartida (un concierto íntimo, una cata de vinos).", "Un detalle que le recuerde lo especial que es para ti (una joya sencilla, su dulce favorito).", "Tiempo de calidad sin interrupciones."],
+        comoActuar: ["Apasionado, juguetón, comunicativo y muy presente.", "Mostrando interés genuino en ella, tanto física como emocionalmente.", "Haciéndola sentir deseada y valorada."],
+        queNoDecir: ["'Estás muy intensa today.' (aunque sea con cariño, puede malinterpretarse).", "'No tengo tiempo para eso ahora.' (si busca un momento de conexión).", "Cualquier cosa que la haga sentir cohibida o insegura."],
+        frasesParaRachel: ["'Cada momento contigo en estos días es mágico. Me encantas.'", "'¿Qué locura divertida se te ocurre que hagamos hoy?'", "'Adoro cuando te expresas con tanta libertad y pasión.'", "'No hay nadie más con quien preferiría estar ahora mismo.'"]
+      },
+      { // Día 3 (Ovulación)
+        adviceDia: "La vitalidad y el deseo de compartir se mantienen altos. Profundizar la conexión y disfrutar de la compañía mutua es clave.",
+        queHacer: ["Planear una actividad que combine diversión y relajación (un picnic, una tarde de spa en casa, ver el atardecer juntos).", "Tener conversaciones significativas sobre sueños, planes o sentimientos.", "Sorprenderla con un gesto romántico o un cumplido inesperado.", "Reforzar la complicidad y el equipo que forman."],
+        queNoHacer: ["Caer en la rutina o la monotonía si ella busca estímulo.", "Ser hermético o poco comunicativo con tus propios sentimientos.", "Descuidar los detalles que mantienen viva la chispa."],
+        queEvitar: ["La negatividad o el cinismo.", "Situaciones que generen estrés o ansiedad.", "Dar por hecho que la conexión se mantendrá sola sin esfuerzo continuo."],
+        queRegalar: ["Un masaje relajante y sensual dado por ti.", "Un libro de poesía o citas inspiradoras.", "Una prenda de ropa que la haga sentir especialmente atractiva."],
+        comoActuar: ["Cariñoso, atento y profundamente conectado.", "Fomentando un ambiente de confianza y apertura total.", "Siendo su mejor amigo/a y amante."],
+        queNoDecir: ["'Ya hemos hablado mucho de eso.' (si ella quiere seguir profundizando en un tema).", "'¿No te cansas de ser tan cariñosa?'", "Cualquier cosa que pueda interpretarse como falta de interés en su mundo interior."],
+        frasesParaRachel: ["'Contigo, cada día se siente como una aventura maravillosa.'", "'Me fascina descubrir más de ti cada día, especialmente ahora.'", "'Eres mi persona favorita en el mundo entero. Gracias por ser tú.'", "'Siento que nuestro amor y conexión se hacen más fuertes en momentos como estos.'"]
+      },
+      { // Día 4 (Ovulación - Inicio de suave descenso hacia Lútea)
+        adviceDia: "La energía sigue siendo buena, pero puede notarse un leve y gradual cambio. Aún es un gran día para conectar, quizás con un tono más sereno.",
+        queHacer: ["Disfrutar de actividades placenteras pero quizás menos eufóricas.", "Conversaciones tranquilas y profundas.", "Gestos de cariño consistentes.", "Planificar juntos la transición a la siguiente fase con calma."],
+        queNoHacer: ["Esperar el mismo pico de intensidad que los días 1-2 si notas un cambio.", "Presionarla si su energía social disminuye un poco."],
+        queEvitar: ["Cambios bruscos en la dinámica de la relación.", "Ignorar las señales sutiles de que el cuerpo se prepara para la fase lútea."],
+        queRegalar: ["Algo que fomente la relajación y el bienestar (un aceite de masaje, un buen té).", "Un diario bonito para que escriba sus pensamientos.", "Una cena casera nutritiva y reconfortante."],
+        comoActuar: ["Observador, tierno y manteniendo la conexión.", "Adaptándose suavemente al ritmo cambiante.", "Asegurándole que cada etapa es valorada."],
+        queNoDecir: ["'¿Qué te pasa? Hoy estás más callada.' (con tono de preocupación excesiva o reclamo).", "'Parece que se acabó la diversión.'"],
+        frasesParaRachel: ["'Adoro también estos momentos de calma y conexión profunda contigo.'", "'Estoy aquí para ti, en cada matiz de tu ciclo. ¿Cómo te sientes hoy?'", "'Planeemos algo relajante para los próximos días, ¿te parece?'", "'Tu bienestar es lo más importante para mí.'"]
+      },
+      { // Día 5 (Ovulación - Transición a Lútea)
+        adviceDia: "La energía sigue alta, pero la transición a la fase lútea comienza. Disfruten los últimos momentos de este pico.",
+        queHacer: ["Mantener el cariño y la atención.", "Quizás una actividad más tranquila pero conectada, como una buena conversación.", "Agradecer los momentos vividos en esta fase."],
+        queNoHacer: ["Dar por sentado que la energía seguirá igual indefinidamente.", "Descuidar la comunicación emocional."],
+        queEvitar: ["Un cambio brusco de actitud.", "Empezar a anticipar negativamente la fase lútea."],
+        queRegalar: ["Un pequeño recuerdo de un momento especial de esta fase.", "Algo que le ayude a relajarse pensando en la próxima fase (un buen libro)."],
+        comoActuar: ["Agradecido, cariñoso y preparándose para un cambio de ritmo.", "Todavía atento y presente."],
+        queNoDecir: ["Bueno, se acabó la diversión.", "Ya veremos cómo te sientes en unos días."],
+        frasesParaRachel: ["'Estos días contigo han sido maravillosos.'", "'Me encanta esta conexión que tenemos.'", "'Sigues estando preciosa. ¿Cómo te sientes hoy?'", "'Disfrutemos este momento.'"]
+      },
+      { // Día 6 (Ovulación)
+        adviceDia: "La extroversión y el deseo de aventura pueden estar presentes. ¡A explorar juntos!",
+        queHacer: ["Probar un restaurante nuevo o exótico.", "Hacer una pequeña escapada de un día a un lugar cercano no conocido.", "Asistir a un festival o evento cultural.", "Ser espontáneos y romper la rutina con algo inesperado."],
+        queNoHacer: ["Aferrarse a la rutina si ella busca novedad.", "Limitar su deseo de explorar o experimentar.", "Ser excesivamente cauteloso o predecible."],
+        queEvitar: ["Aburrimiento o monotonía.", "Planes demasiado rígidos que no permitan la espontaneidad.", "Miedo a salir de la zona de confort."],
+        queRegalar: ["Una guía de viajes de un lugar que quieran visitar.", "Entradas para una actividad aventurera (tirolina, kayak, etc., si le gusta).", "Un objeto curioso de alguna tienda de antigüedades o artesanías."],
+        comoActuar: ["Aventurero y cómplice.", "Abierto a nuevas experiencias y dispuesto a la diversión.", "Fomentando la curiosidad y el descubrimiento mutuo."],
+        queNoDecir: ["'Eso es demasiado arriesgado/raro.'", "'Mejor hacemos lo de siempre.'", "'No tengo ganas de probar nada nuevo.'"],
+        frasesParaRachel: ["'¡Vamos a explorar el mundo juntos, aunque sea nuestro propio vecindario!'", "'Contigo, cualquier lugar se convierte en una aventura.'", "'¿Qué te parece si hoy hacemos algo completamente diferente?'"]
+      },
+      { // Día 7 (Ovulación - Transición a Lútea)
+        adviceDia: "Último día de posible pico de energía ovulatoria. Transición suave a la fase lútea comienza a sentirse.",
+        queHacer: ["Mantener cariño y atención.", "Actividad tranquila pero conectada.", "Agradecer momentos vividos.", "Planificar una cena romántica y relajada en casa."],
+        queNoHacer: ["Dar por sentado que la energía seguirá igual.", "Descuidar comunicación emocional.", "Hacer planes muy demandantes para el día siguiente."],
+        queEvitar: ["Cambio brusco de actitud.", "Anticipar negativamente la fase lútea.", "Estrés de última hora."],
+        queRegalar: ["Un recuerdo especial de esta fase (foto enmarcada, playlist).", "Un buen libro o película para la relajación venidera.", "Un postre delicioso para compartir."],
+        comoActuar: ["Agradecido, cariñoso, preparándose para cambio de ritmo.", "Atento y presente.", "Enfocándose en la conexión emocional serena."],
+        queNoDecir: ["'Bueno, se acabó la diversión.'", "'Prepárate para la próxima fase.' (con tono de advertencia)."],
+        frasesParaRachel: ["'Estos días contigo han sido maravillosos, llenos de luz.'", "'Atesoro cada momento de conexión que tenemos.'", "'Disfrutemos esta noche tranquila juntos.'"]
+      }
+    ]
+  },
+  { // --- FASE LÚTEA ---
+    name: "Lútea", class: "lutea", icon: "🌙",
+    adviceGeneral: "Energía desciende, posible sensibilidad premenstrual. Necesita calma y comprensión.",
+    dias: [ // Extendido a 16 días
+      { // Día 1 (Lútea temprana - Post-ovulatoria)
+        adviceDia: "La energía comienza a bajar gradualmente. Buen momento para actividades más tranquilas y autocuidado.",
+        queHacer: ["Proponer planes relajados (noche de pelis, cocinar juntos algo sencillo).", "Ayudarla a organizar su espacio o tareas para evitar estrés futuro.", "Fomentar momentos de introspección si los necesita."],
+        queNoHacer: ["Esperar el mismo nivel de energía que en la ovulación.", "Presionarla con actividades sociales si prefiere estar en casa."],
+        queEvitar: ["Situaciones de alta demanda energética o estrés.", "El desorden o caos que pueda generar ansiedad."],
+        queRegalar: ["Ingredientes para una comida reconfortante.", "Un buen libro o una suscripción a una revista.", "Un aceite esencial relajante (lavanda, manzanilla)."],
+        comoActuar: ["Comprensivo, observador y proactivo en ofrecer calma.", "Adaptable a sus cambios de energía.", "Paciente y cariñoso."],
+        queNoDecir: ["'¿Ya te bajó la energía?' (en tono de queja).", "'Deberías salir más.'"],
+        frasesParaRachel: ["'¿Qué te apetece hacer hoy, algo tranquilo en casa quizás?'", "'Si necesitas algo de mí para relajarte, solo dímelo.'", "'Valoro mucho nuestros momentos de calma también.'", "'Estoy aquí para apoyarte mientras tu cuerpo cambia de ritmo.'"]
+      },
+      { // Día 2 (Lútea temprana)
+        adviceDia: "La energía de la ovulación se ha ido, un ritmo más calmado se instala. Buen día para la rutina y actividades que no exijan demasiado.",
+        queHacer: ["Establecer o seguir una rutina tranquila.", "Realizar tareas que requieran concentración pero no alta energía creativa.", "Proponer una cena nutritiva y fácil en casa.", "Fomentar momentos de relajación (leer, escuchar música suave)."],
+        queNoHacer: ["Esperar el mismo nivel de entusiasmo o energía que en fases anteriores.", "Llenar el día con demasiadas actividades sociales o exigentes.", "Presionarla para que sea 'más animada'."] ,
+        queEvitar: ["Cambios bruscos en los planes que puedan generar estrés.", "Exceso de cafeína o azúcar que puedan afectar el ánimo o el sueño.", "Situaciones de alta competencia o confrontación."],
+        queRegalar: ["Un buen libro o una suscripción a una revista de su interés.", "Ingredientes para preparar juntos una comida saludable y reconfortante.", "Una planta para el hogar que aporte calma."],
+        comoActuar: ["Comprensivo, sereno y estable.", "Apoyando un ritmo más pausado.", "Valorando la tranquilidad y la conexión más introspectiva."],
+        queNoDecir: ["'¿Qué te pasa? Estás muy seria.'", "'Anímate, no es para tanto.' (si muestra cansancio).", "'Antes tenías más energía.'"],
+        frasesParaRachel: ["'Disfrutemos de un día tranquilo hoy, ¿te parece?'", "'Estoy aquí para lo que necesites, si prefieres un ritmo más calmado, perfecto.'", "'Valoro estos momentos de paz contigo.'", "'¿Hay algo que te haría sentir especialmente cómoda y relajada hoy?'"]
+      },
+      { // Día 3 (Lútea temprana)
+        adviceDia: "El cuerpo puede empezar a sentirse un poco más pesado o la mente más introspectiva. Apoya su necesidad de autocuidado.",
+        queHacer: ["Sugerir actividades de autocuidado (un baño relajante, una siesta).", "Ayudar con tareas domésticas para aliviar su carga.", "Tener conversaciones tranquilas y significativas si ella las inicia.", "Respetar sus momentos de soledad si los busca."],
+        queNoHacer: ["Interpretar su introspección como desinterés.", "Forzarla a socializar si prefiere estar tranquila.", "Criticar su menor nivel de energía."],
+        queEvitar: ["El desorden o el caos en casa, que puede aumentar la sensación de agobio.", "Comidas muy procesadas o pesadas.", "Presión para tomar decisiones importantes si no se siente clara."],
+        queRegalar: ["Sales de baño o aceites esenciales relajantes.", "Una manta suave y confortable.", "Su té de hierbas favorito."],
+        comoActuar: ["Gentil, observador y respetuoso de sus necesidades.", "Ofreciendo apoyo práctico sin ser invasivo.", "Creando un ambiente de refugio y confort."],
+        queNoDecir: ["'¿Estás enfadada por algo?' (si simplemente está callada).", "'Deberías hacer un esfuerzo por estar más activa.'", "'No te encierres en ti misma.'"],
+        frasesParaRachel: ["'Tómate el tiempo que necesites para ti, mi amor. Yo me encargo de [X tarea].'", "'Si necesitas espacio o silencio, lo entiendo perfectamente.'", "'Tu bienestar es lo más importante. ¿Cómo puedo ayudarte a sentirte mejor?'", "'Estoy aquí si quieres hablar, o simplemente estar juntos en calma.'"]
+      },
+      { // Día 4 (Lútea temprana-media)
+        adviceDia: "La energía sigue disminuyendo gradualmente. Es un buen momento para enfocarse en el bienestar emocional y físico de forma proactiva.",
+        queHacer: ["Planificar comidas equilibradas y nutritivas.", "Proponer ejercicio suave como yoga o estiramientos.", "Dedicar tiempo a hobbies relajantes.", "Preguntar cómo se siente y si hay algo que le preocupe con miras a los próximos días (prevención SPM)."],
+        queNoHacer: ["Ignorar las pequeñas señales de cansancio o sensibilidad.", "Posponer conversaciones importantes si ella se siente con ánimo de tenerlas ahora.", "Descuidar la alimentación saludable."],
+        queEvitar: ["Noches de trasnoche o falta de sueño.", "Situaciones que sabe que le generan estrés innecesario.", "Compararse con los niveles de energía de otras fases."],
+        queRegalar: ["Un libro de recetas saludables y fáciles.", "Una esterilla de yoga nueva o accesorios para ejercicio suave.", "Un difusor de aromas con aceites calmantes."],
+        comoActuar: ["Preventivo y cuidadoso.", "Fomentando hábitos saludables de forma amable.", "Escuchando con atención para anticipar necesidades."],
+        queNoDecir: ["'No te preocupes por el SPM todavía, falta mucho.' (minimizar).", "'Come lo que quieras, no importa.' (si están tratando de cuidar la dieta).", "'No necesitas tanto descanso.'"],
+        frasesParaRachel: ["'Pensemos juntos en cómo hacer estos días lo más llevaderos y agradables posible.'", "'Me importa mucho cómo te sientes. ¿Hay algo en particular que te gustaría que tuviéramos en cuenta?'", "'Cuidarnos juntos es un acto de amor. ¿Qué te apetece comer sano hoy?'", "'Tu salud y felicidad son mi prioridad.'"]
+      },
+      { // Día 5 (Lútea media - Inicio de posible sensibilidad)
+        adviceDia: "Pueden empezar a aparecer los primeros signos de sensibilidad premenstrual (cansancio, antojos, cambios de humor leves). Observación y paciencia extra.",
+        queHacer: ["Estar atento a sus cambios de humor o energía.", "Tener a mano snacks saludables pero también algún capricho que sepas que le gusta (con moderación).", "Ofrecer más ayuda en casa sin que lo pida.", "Validar sus sentimientos si expresa alguna molestia o emoción."],
+        queNoHacer: ["Tomarse personal cualquier pequeño cambio de humor.", "Criticar sus antojos o su necesidad de más descanso.", "Minimizar los primeros síntomas si los menciona."],
+        queEvitar: ["Situaciones de alta presión o confrontación.", "Hacer planes muy rígidos que no permitan flexibilidad.", "Juzgar si está más callada o menos comunicativa."],
+        queRegalar: ["Su chocolate favorito (con moderación).", "Una tarde libre para que haga lo que más le apetezca.", "Una película o serie que sepas que la relajará o la hará reír."],
+        comoActuar: ["Más observador, paciente y flexible.", "Dispuesto a adaptar los planes.", "Mostrando empatía y comprensión desde el inicio de la posible sensibilidad."],
+        queNoDecir: ["'¿Ya vas a empezar con tus cosas?'", "'No será para tanto, seguro es idea tuya.'", "'Controla tu humor.'"],
+        frasesParaRachel: ["'He notado que quizás necesitas un poco más de calma hoy, ¿es así?'", "'Si tienes algún antojo o necesitas algo especial, dímelo.'", "'Estoy aquí para ti, sea lo que sea que sientas. No tienes que fingir.'", "'¿Qué tal si hoy nos relajamos y pedimos comida para no cocinar?'"]
+      },
+      { // Día 6 (Lútea media - Sensibilidad puede aumentar)
+        adviceDia: "Si hay SPM, la sensibilidad emocional y física puede ser más evidente. La comunicación clara y la empatía son cruciales.",
+        queHacer: ["Fomentar un ambiente de mucha calma y poco estrés.", "Preguntar directamente cómo puedes ayudarla o qué necesita.", "Ser especialmente cariñoso y paciente con sus palabras y gestos.", "Recordarle que es normal sentirse así y que estás para apoyarla."],
+        queNoHacer: ["Entrar en discusiones por temas menores.", "Presionarla para que explique cada emoción si no le apetece.", "Hacerla sentir culpable por no estar 'al 100%'."],
+        queEvitar: ["Críticas (incluso las constructivas pueden ser mal recibidas).", "Sorpresas o cambios de planes de última hora que puedan desestabilizarla.", "Personas o situaciones que sepa que la irritan."],
+        queRegalar: ["Un vale por 'un día de mimos' (masajes, que le prepares sus comidas favoritas, etc.).", "Un ambiente tranquilo en casa (velas, música suave, orden).", "Tu completa atención y escucha activa."],
+        comoActuar: ["Como un ancla de calma y comprensión.", "Muy paciente, tolerante y afectuoso.", "Priorizando su bienestar emocional por encima de todo."],
+        queNoDecir: ["'Estás exagerando.'", "'Relájate' (suele tener el efecto contrario).", "'¿Por qué estás tan sensible?'"],
+        frasesParaRachel: ["'Entiendo que te sientas así y es perfectamente válido. Estoy aquí contigo.'", "'¿Qué necesitas de mí en este momento para sentirte un poquito mejor?'", "'Tu sentir es importante. Avísame si algo te molesta o si puedo hacer algo.'", "'Te quiero muchísimo, en todas tus fases y con todas tus emociones.'"]
+      },
+      { // Día 7 (Lútea media - Preparándose para días potencialmente más difíciles)
+        adviceDia: "La anticipación de días más complicados (si suele tener SPM fuerte) puede generar ansiedad. Reforzar la seguridad y el apoyo.",
+        queHacer: ["Planificar los próximos días con ella, buscando simplificar tareas y asegurar momentos de descanso.", "Confirmar planes relajantes y cancelar o posponer lo que pueda generar estrés.", "Asegurarse de tener en casa lo necesario para su confort (remedios naturales, alimentos que le sienten bien).", "Hablar sobre estrategias que le hayan funcionado en el pasado para manejar el SPM."],
+        queNoHacer: ["Minimizar sus preocupaciones sobre cómo se sentirá.", "Dejar para última hora preparativos que puedan aliviarla.", "Mostrar impaciencia o agobio por la llegada de esta etapa."],
+        queEvitar: ["Generar expectativas de que 'esta vez no será tan malo'.", "Situaciones de incertidumbre o falta de planificación que añadan estrés.", "Descuidar la comunicación sobre sus necesidades específicas para estos días."],
+        queRegalar: ["La promesa de tu apoyo incondicional y paciencia.", "Una lista de reproducción de música o podcasts que la calmen o distraigan.", "Un kit de supervivencia para el SPM (con sus tés favoritos, snacks, una película, etc.)."],
+        comoActuar: ["Proactivo, organizado y muy empático.", "Como un equipo, listos para afrontar juntos los días que vienen.", "Transmitiendo seguridad y amor."],
+        queNoDecir: ["'Espero que no te pongas como el mes pasado.'", "'Seguro que no es para tanto esta vez.'", "'No pienses en eso y ya está.'"],
+        frasesParaRachel: ["'Estamos juntos en esto, mi amor. Pensaremos en todo para que estés lo más cómoda posible.'", "'¿Qué cosas te ayudaron otros meses? Vamos a asegurarnos de tenerlas listas.'", "'No tienes que pasar por esto sola. Cuenta conmigo para todo.'", "'Te admiro por tu fortaleza. Haremos que estos días sean lo más suaves posible.'"]
+      },
+      { // Día 8 (Lútea media-tardía - SPM puede estar presente)
+        adviceDia: "Si el SPM es parte de su ciclo, los síntomas pueden estar haciéndose notar. La paciencia es oro, y el apoyo práctico, un tesoro.",
+        queHacer: ["Reducir al mínimo las exigencias y responsabilidades para ella.", "Ofrecerse a hacer recados, cocinar o limpiar.", "Crear un ambiente muy sereno en casa.", "Estar disponible para escucharla si necesita desahogarse, sin intentar 'solucionar' todo, solo acompañar."],
+        queNoHacer: ["Saturarla con preguntas sobre cómo se siente si prefiere no hablar.", "Mostrar frustración si los planes cambian o se cancelan.", "Comparar su estado con el de otras personas."],
+        queEvitar: ["Lugares ruidosos, multitudes o situaciones socialmente demandantes.", "Conversaciones que puedan derivar en discusiones.", "Presionarla para que mantenga un ánimo positivo si no le sale natural."],
+        queRegalar: ["Silencio y paz si es lo que necesita.", "Su comida de confort favorita, sin culpas.", "Un abrazo largo y cálido si lo busca (o espacio si lo prefiere)."],
+        comoActuar: ["Como un apoyo silencioso pero firme.", "Extremadamente paciente y comprensivo.", "Adaptándose a sus necesidades minuto a minuto."],
+        queNoDecir: ["'Pero si ayer estabas bien.'", "'Intenta poner de tu parte.'", "'No te dejes vencer por eso.'"],
+        frasesParaRachel: ["'Estoy aquí, amor. No tienes que decir nada si no quieres. Solo quiero que sepas que no estás sola.'", "'¿Hay algo, lo que sea, que te haría sentir un poquito mejor ahora mismo?'", "'Permítete sentir lo que sea que estés sintiendo. Yo te acompaño.'", "'Esto también pasará. Mientras tanto, aquí estoy para cuidarte.'"]
+      },
+      { // Día 9 (Lútea media-tardía - Profundización de síntomas si hay SPM)
+        adviceDia: "Los síntomas de SPM (físicos y emocionales) pueden intensificarse. Hoy, más que nunca, necesita un refugio de calma y amor incondicional.",
+        queHacer: ["Priorizar su descanso por encima de todo.", "Manejar cualquier fuente de estrés externa por ella.", "Si tiene dolores, ofrecerle masajes suaves, una bolsa de agua caliente.", "Recordarle suavemente que se hidrate y coma algo ligero, aunque no tenga mucho apetito."],
+        queNoHacer: ["Intentar razonar con emociones intensas.", "Mostrar impaciencia si está irritable o llorosa.", "Hacerla sentir como una carga."],
+        queEvitar: ["Cualquier actividad que no sea estrictamente necesaria.", "Personas o comentarios que puedan herir su sensibilidad.", "Autocrítica por parte de ella (ayúdala a ser compasiva consigo misma)."],
+        queRegalar: ["Tu presencia calmada y amorosa.", "Un ambiente perfectamente preparado para su descanso (habitación oscura, sin ruidos).", "La seguridad de que todo está bajo control fuera de su burbuja de descanso."],
+        comoActuar: ["Como un ángel guardián: protector, gentil y anticipándose a sus necesidades.", "Con una paciencia infinita y ternura desbordante.", "Validando cada uno de sus sentimientos."],
+        queNoDecir: ["'No llores, no es para tanto.'", "'Ya se te pasará, no le des importancia.'", "'Tienes que ser más fuerte.'"],
+        frasesParaRachel: ["'Mi amor, estoy aquí para protegerte y cuidarte. No te preocupes por nada más.'", "'Permítete descansar todo lo que necesites. El mundo puede esperar.'", "'Entiendo que te sientas así de vulnerable. Es normal y estoy aquí para sostenerte.'", "'Te amo profundamente, con tus luces y tus sombras. Eres maravillosa.'"]
+      },
+      { // Día 10 (Lútea media-tardía - Cercano al "Día X SPM" del usuario o un día de alta sensibilidad)
+        adviceDia: "Este podría ser uno de los días más sensibles. Máxima alerta para ofrecer confort y apoyo incondicional. Paciencia y amor son la clave.",
+        queHacer: ["Aplicar todas las estrategias de confort que funcionaron en el pasado.", "Ser un escudo contra el mundo exterior; filtrar interacciones.", "Ofrecer contacto físico reconfortante (abrazos, caricias) si le ayuda, o respetar su espacio si lo necesita.", "Manejar con calma cualquier crisis emocional, recordando que es temporal."],
+        queNoHacer: ["Perder la calma, incluso si la situación es tensa.", "Dejarla sola si muestra miedo o ansiedad intensa (a menos que pida explícitamente espacio).", "Presionar para que 'se recupere ya' o minimizar sus sentimientos."] ,
+        queEvitar: ["Cualquier cosa que en el pasado haya desencadenado malestar.", "La sensación de abandono o incomprensión.", "Ruidos fuertes, luces brillantes, olores intensos si está muy sensible."],
+        queRegalar: ["La sensación de seguridad absoluta.", "Un entorno que se sienta como un santuario.", "Pequeños gestos que demuestren que estás pensando en cada detalle de su bienestar (su té listo, su almohada favorita)."],
+        comoActuar: ["Con la serenidad de un monje y el amor de un compañero devoto.", "Respondiendo a sus necesidades más básicas y emocionales con prontitud y suavidad.", "Recordándole que este pico de malestar es temporal y que juntos lo superarán."],
+        queNoDecir: ["'No sé qué más hacer contigo.'", "'Me estás desesperando.'", "'¿Cuándo se te va a pasar esto?'"],
+        frasesParaRachel: ["'Estoy aquí, respirando contigo. Superaremos este momento juntos.'", "'No tienes que ser fuerte ahora. Yo seré fuerte por los dos.'", "'Confía en mí, te cuidaré. Cualquier cosa que necesites, por pequeña que sea, dímelo.'", "'Este malestar intenso pasará. Aférrate a mi mano. Te amo.'"]
+      },
+      { // Día 11 (Lútea tardía - Post-pico SPM, antes del "Último Día Lútea")
+        adviceDia: "Si el pico de SPM fue en días anteriores, hoy podría haber un ligero alivio o un cansancio residual. Sigue siendo necesaria mucha suavidad y comprensión.",
+        queHacer: ["Evaluar con delicadeza cómo se siente, sin presionar.", "Si hay mejoría, celebrarlo sutilmente sin generar expectativas.", "Continuar con un ambiente de calma y apoyo, pero quizás abierto a actividades muy ligeras si ella lo desea (ej. ver una película tranquila).", "Fomentar la hidratación y nutrición reparadora."],
+        queNoHacer: ["Asumir que 'ya todo pasó' y volver a la normalidad bruscamente.", "Descuidar el apoyo emocional aunque los síntomas físicos disminuyan.", "Presionarla para que 'aproveche que se siente mejor' con muchas actividades."],
+        queEvitar: ["El exceso de confianza en la recuperación, el cuerpo aún está sensible.", "Situaciones que puedan causar una recaída en el malestar.", "Olvidar lo difícil que fueron los días anteriores y no validar ese esfuerzo."],
+        queRegalar: ["Una comida nutritiva y deliciosa que le guste y sea fácil de digerir.", "Una película o libro que la haga sentir bien y optimista, sin dramas intensos.", "Un paseo muy corto y suave por un lugar tranquilo y bonito, solo si le apetece y el clima acompaña."],
+        comoActuar: ["Gentil, observador y agradecido por cualquier mejoría.", "Todavía muy protector, pero permitiendo que ella marque el ritmo.", "Recordando la importancia del autocuidado continuo y la paciencia."],
+        queNoDecir: ["'¡Ves, no era para tanto!'", "'Bueno, ya pasó, ahora a otra cosa.'", "'A ver si mañana ya estás normal del todo.'"],
+        frasesParaRachel: ["'Me alegra ver un poquito más de luz en tus ojos hoy. ¿Cómo te sientes realmente, mi amor?'", "'Vamos a tu ritmo, sin prisas. Si hoy te apetece [actividad suave], genial. Si no, también está perfecto.'", "'Sigue cuidándote mucho. Tu cuerpo ha pasado por mucho y merece descanso.'", "'Estoy aquí para disfrutar contigo los momentos de calma y alivio también.'"]
+      },
+      { // Día 12 (Lútea tardía - Post-Sensibilidad)
+        adviceDia: "Si el SPM aparece, la sensibilidad e irritabilidad pueden aumentar. Máxima paciencia y apoyo.",
+        queHacer: ["Ser extra paciente y no tomarse las cosas personal.", "Ofrecerle su comida o bebida de confort.", "Crear un ambiente de refugio y seguridad.", "Escucharla sin juzgar si necesita desahogarse.", "Validar sus sentimientos: 'entiendo que te sientas así'."],
+        queNoHacer: ["Decirle que 'está exagerando' o 'son las hormonas'.", "Iniciar discusiones o temas conflictivos.", "Hacerla sentir culpable por su estado de ánimo."],
+        queEvitar: ["Situaciones estresantes o que requieran mucha interacción social si no le apetece.", "Criticarla o presionarla.", "Cafeína o azúcar en exceso si nota que le afecta negativamente."],
+        queRegalar: ["Una manta suave y cómoda.", "Un baño relajante preparado por ti.", "Su serie o película favorita lista para ver.", "Ofrecerte a hacerle un masaje suave."],
+        comoActuar: ["Como un puerto seguro: calmado, estable y amoroso.", "Muy comprensivo y tolerante.", "Recordarle cuánto la quieres, independientemente de su humor."],
+        queNoDecir: ["'Cálmate.' (suele tener el efecto contrario).", "'No es para tanto.'", "'¿Otra vez estás así?'"],
+        frasesParaRachel: ["'Entiendo que te sientas abrumada/irritable/triste, y está bien. Estoy aquí contigo.'", "'¿Hay algo que pueda hacer para que te sientas un poquito mejor ahora mismo?'", "'Te quiero muchísimo, en todos tus momentos. No estás sola en esto.'", "'Vamos a pasar este bache juntos, ¿sí?' 🤗"]
+      },
+      { // Día 13 (Lútea tardía - Pre-menstrual)
+        adviceDia: "La menstruación está por llegar. Puede sentirse hinchada, cansada y muy sensible. Preparativos para el descanso.",
+        queHacer: ["Asegurarse de que tenga todo listo para su comodidad menstrual (compresas, analgésicos suaves).", "Planear un fin de semana o días siguientes muy tranquilos.", "Ofrecerle comidas ligeras y nutritivas.", "Mucha ternura y comprensión."],
+        queNoHacer: ["Planificar eventos importantes o demandantes.", "Ignorar sus señales de malestar inminente."],
+        queEvitar: ["Cualquier cosa que le genere estrés adicional.", "Presionarla para que 'aguante' el malestar."],
+        queRegalar: ["Una bolsa de semillas para calentar.", "Un té especial para el ciclo menstrual.", "La promesa de encargarte de todo en los próximos días."],
+        comoActuar: ["Preparado para la fase menstrual, con actitud de cuidado máximo.", "Muy protector y empático.", "Reafirmar el apoyo incondicional."],
+        queNoDecir: ["'A ver si esta vez no es tan malo.'", "Comentarios que minimicen lo que está por venir."],
+        frasesParaRachel: ["'Ya casi llega tu descanso, mi amor. Estoy aquí para cuidarte en todo.'", "'No te preocupes por nada, yo me preparo para que estés lo más cómoda posible.'", "'Avísame cualquier cosita que necesites para mañana.'", "'Te admiro por tu fortaleza. Ya viene la calma.'"]
+      },
+      { // Día 14 (Lútea tardía - Nuevo)
+        adviceDia: "La introspección puede ser profunda. Un buen día para escribir, meditar o simplemente estar en calma.",
+        queHacer: ["Fomentar actividades solitarias y tranquilas si lo desea.", "Crear un ambiente sereno, con música suave o silencio.", "Ofrecer una bebida caliente y reconfortante.", "Respetar su necesidad de espacio personal."],
+        queNoHacer: ["Interrumpirla constantemente si está concentrada o descansando.", "Forzar la socialización o actividades grupales.", "Llenar el día de ruido o estímulos excesivos."],
+        queEvitar: ["Presión para ser comunicativa si prefiere el silencio.", "Ambientes caóticos o desordenados.", "Sentimientos de culpa por necesitar tiempo a solas."],
+        queRegalar: ["Un diario bonito y un bolígrafo especial.", "Un libro de filosofía o espiritualidad (si le interesa).", "Sales de baño para un momento de relajación profunda."],
+        comoActuar: ["Respetuoso de su espacio y su proceso interno.", "Disponible pero no invasivo.", "Creando un santuario de paz en casa."],
+        queNoDecir: ["'¿Por qué estás tan callada?' (con tono de preocupación o reclamo).", "'Sal un poco, te vendrá bien.' (si ella prefiere quedarse).", "'No te aísles tanto.'"],
+        frasesParaRachel: ["'Tu espacio y tu tiempo son sagrados. Disfruta de tu calma.'", "'Si necesitas algo, estoy cerca, pero tómate todo el tiempo que quieras para ti.'", "'A veces, el mejor regalo es la paz interior.'"]
+      },
+      { // Día 15 (Lútea tardía - Nuevo)
+        adviceDia: "La necesidad de 'anidar' o preparar el entorno para el descanso menstrual puede surgir. Apoyo en tareas del hogar.",
+        queHacer: ["Ayudar a ordenar o limpiar espacios comunes de forma discreta.", "Asegurarse de que la cama esté especialmente cómoda (sábanas limpias, almohadas extras).", "Preparar comidas sencillas y nutritivas con antelación.", "Preguntar si hay algo específico que le gustaría tener listo para los próximos días."],
+        queNoHacer: ["Generar más desorden o interrumpir sus intentos de organizar.", "Criticar su forma de preparar las cosas.", "Dejarle toda la carga de los preparativos."],
+        queEvitar: ["Estrés por tener la casa 'perfecta'. El objetivo es el confort, no la perfección.", "Proyectos de reorganización grandes y agotadores.", "Esperar a último momento para conseguir cosas que necesitará."],
+        queRegalar: ["Una vela aromática suave para el dormitorio.", "Ropa de cama nueva y acogedora.", "Tu ayuda incondicional para cualquier tarea que facilite su confort."],
+        comoActuar: ["Colaborador y práctico.", "Anticipándose a las necesidades de confort para la menstruación.", "Haciendo el entorno lo más acogedor posible."],
+        queNoDecir: ["'No te preocupes tanto por el orden ahora.' (si para ella es importante).", "'Ya lo haré después.' (si es algo que le daría tranquilidad ahora).", "'¿Para qué tanto preparativo?'"],
+        frasesParaRachel: ["'Déjame ayudarte a crear nuestro nidito de confort para tus días de descanso.'", "'¿Qué podemos hacer hoy para que te sientas súper cómoda cuando llegue tu luna?'", "'Me encanta cuidar de ti y de nuestro espacio juntos.'"]
+      },
+      { // Día 16 (Lútea tardía - Prácticamente premenstrual)
+        adviceDia: "La menstruación es inminente. Máxima ternura, paciencia y preparación para el primer día de sangrado.",
+        queHacer: ["Confirmar que tiene todo lo necesario (productos menstruales, analgésicos suaves, bolsa de agua caliente).", "Planificar un día siguiente de mínimo esfuerzo para ella.", "Ofrecer masajes suaves si le alivian.", "Recordarle que está bien sentirse vulnerable y que la apoyas."],
+        queNoHacer: ["Hacer planes que no se puedan cancelar fácilmente para el día siguiente.", "Mostrar impaciencia o frustración por los síntomas premenstruales.", "Minimizar cualquier malestar que exprese."],
+        queEvitar: ["Cualquier situación que pueda añadir estrés o ansiedad.", "Comidas pesadas o irritantes.", "Exigirle que 'aguante' o 'no se queje'."],
+        queRegalar: ["La seguridad de tu presencia y apoyo incondicional.", "Su infusión relajante favorita lista.", "Un 'vale por un día de mimos totales' para el inicio de su menstruación."],
+        comoActuar: ["Como un ángel guardián, listo para cuidarla.", "Extremadamente empático y tierno.", "Transmitiendo calma y seguridad."],
+        queNoDecir: ["'Espero que no sea tan malo como otras veces.'", "'Ya mañana estarás mejor.' (sin saberlo).", "'No te preocupes, no es nada.'"],
+        frasesParaRachel: ["'Estoy aquí contigo, mi amor. Lista para cuando tu cuerpo necesite descansar y renovarse.'", "'Mañana será un día para ti, para tu cuidado. Yo me encargo del resto.'", "'Te amo infinitamente, en cada momento de tu ciclo.'"]
+      }
+    ]
+  }
+];
+function saveToLocal(data) {
+    localStorage.setItem("franRachelApp_startDate_detailed", data.startDate);
+    localStorage.setItem("franRachelApp_cycleLength_detailed", data.cycleLength);
+    localStorage.setItem("franRachelApp_bleedingDays_detailed", data.bleedingDays);
+    localStorage.setItem("franRachelApp_folicularDays_detailed", data.folicularDaysInput);
+    localStorage.setItem("franRachelApp_ovulationDays_detailed", data.ovulationDaysInput);
+    localStorage.setItem("franRachelApp_lutealDays_detailed", data.lutealDaysInput);
+}
+
+function loadFromLocal() {
+    // Asegurarse que 'phases' está disponible si generateCalendarAndDisplay depende de ella globalmente.
+    // Si 'phases' se carga asíncronamente (no es el caso aquí, ya que dijiste que está lista),
+    // esta lógica necesitaría esperar.
+
+    const startDateVal = localStorage.getItem("franRachelApp_startDate_detailed");
+    const cycleLengthVal = localStorage.getItem("franRachelApp_cycleLength_detailed");
+    const bleedingDaysVal = localStorage.getItem("franRachelApp_bleedingDays_detailed");
+    const folicularDaysInputVal = localStorage.getItem("franRachelApp_folicularDays_detailed");
+    const ovulationDaysInputVal = localStorage.getItem("franRachelApp_ovulationDays_detailed");
+    const lutealDaysInputVal = localStorage.getItem("franRachelApp_lutealDays_detailed");
+
+    const startDateEl = document.getElementById("startDate");
+    const cycleLengthEl = document.getElementById("cycleLength");
+    const bleedingDaysEl = document.getElementById("bleedingDays");
+    const folicularDaysInputEl = document.getElementById("follicularDaysInput");
+    const ovulationDaysInputEl = document.getElementById("ovulationDaysInput");
+    const lutealDaysInputEl = document.getElementById("lutealDaysInput");
+
+    if (startDateEl && startDateVal) startDateEl.value = startDateVal;
+    if (cycleLengthEl && cycleLengthVal) cycleLengthEl.value = cycleLengthVal;
+    if (bleedingDaysEl && bleedingDaysVal) bleedingDaysEl.value = bleedingDaysVal;
+    if (folicularDaysInputEl && folicularDaysInputVal) folicularDaysInputEl.value = folicularDaysInputVal;
+    if (ovulationDaysInputEl && ovulationDaysInputVal) ovulationDaysInputEl.value = ovulationDaysInputVal;
+    if (lutealDaysInputEl && lutealDaysInputVal) lutealDaysInputEl.value = lutealDaysInputVal;
+    
+    if (startDateVal && typeof phases !== 'undefined' && phases.length > 0) { 
+        generateCalendarAndDisplay();
+    } else if (startDateVal) {
+        console.warn("Fecha de inicio encontrada, pero la data 'phases' no está lista para generar el calendario automáticamente.");
+    }
+}
+
+function generateCalendarAndDisplay() {
+    if (typeof phases === 'undefined' || phases.length === 0) {
+        console.error("generateCalendarAndDisplay llamado antes de que 'phases' data esté definida o cargada.");
+        alert("Error: Los datos base de las fases no están disponibles. No se puede generar el calendario.");
+        return;
+    }
+
+    const calendarContainer = document.getElementById("calendar");
+    if (!calendarContainer) {
+        console.error("Elemento 'calendar' no encontrado en el DOM.");
+        return;
+    }
+    calendarContainer.innerHTML = "";
+
+    const startDateEl = document.getElementById("startDate");
+    if (!startDateEl || !startDateEl.value) {
+        // Esta función puede ser llamada por loadFromLocal, así que no siempre es un error si no hay valor aquí aún.
+        // La validación principal de startDateEl.value está en handleFormSubmit.
+        return; 
+    }
+    const startDate = new Date(startDateEl.value + "T00:00:00");
+
+    const defaultMenstrualDays = 5;
+    const defaultFolicularDays = 7;
+    const defaultOvulationDays = 5;
+    const defaultLutealDays = 11;
+
+    // Obtener elementos del formulario para leer sus valores
+    const cycleLengthEl = document.getElementById("cycleLength");
+    const bleedingDaysEl = document.getElementById("bleedingDays");
+    const folicularDaysInputEl = document.getElementById("follicularDaysInput");
+    const ovulationDaysInputEl = document.getElementById("ovulationDaysInput");
+    const lutealDaysInputEl = document.getElementById("lutealDaysInput");
+
+    // Es crucial que estos elementos existan, si no, .value dará error.
+    // La verificación principal de existencia está en handleFormSubmit, aquí asumimos que si se llega, existen.
+    let inputCycleLength = cycleLengthEl ? parseInt(cycleLengthEl.value) || 0 : 0;
+    let inputBleedingDays = bleedingDaysEl ? parseInt(bleedingDaysEl.value) || defaultMenstrualDays : defaultMenstrualDays;
+    let inputFolicularDays = folicularDaysInputEl ? parseInt(folicularDaysInputEl.value) || defaultFolicularDays : defaultFolicularDays;
+    let inputOvulationDays = ovulationDaysInputEl ? parseInt(ovulationDaysInputEl.value) || defaultOvulationDays : defaultOvulationDays;
+    let inputLutealDays = lutealDaysInputEl ? parseInt(lutealDaysInputEl.value) || defaultLutealDays : defaultLutealDays;
+    
+    let menstrualDaysActual = Math.max(1, inputBleedingDays);
+    let folicularDaysActual = Math.max(1, inputFolicularDays);
+    let ovulacionDaysActual = Math.max(1, inputOvulationDays);
+    let lutealDaysActual;
+    let finalCycleLength;
+
+    if (inputCycleLength > 0) {
+        finalCycleLength = inputCycleLength;
+        let sumFirstThreePhases = menstrualDaysActual + folicularDaysActual + ovulacionDaysActual;
+        lutealDaysActual = Math.max(1, finalCycleLength - sumFirstThreePhases);
+
+        if (sumFirstThreePhases + lutealDaysActual > finalCycleLength || sumFirstThreePhases >= finalCycleLength) {
+            menstrualDaysActual = Math.min(menstrualDaysActual, finalCycleLength - 3); 
+            menstrualDaysActual = Math.max(1, menstrualDaysActual);
+            folicularDaysActual = Math.min(folicularDaysActual, finalCycleLength - menstrualDaysActual - 2); 
+            folicularDaysActual = Math.max(1, folicularDaysActual);
+            ovulacionDaysActual = Math.min(ovulacionDaysActual, finalCycleLength - menstrualDaysActual - folicularDaysActual - 1); 
+            ovulacionDaysActual = Math.max(1, ovulacionDaysActual);
+            lutealDaysActual = Math.max(1, finalCycleLength - menstrualDaysActual - folicularDaysActual - ovulacionDaysActual);
+            finalCycleLength = menstrualDaysActual + folicularDaysActual + ovulacionDaysActual + lutealDaysActual;
+        }
+    } else { 
+        lutealDaysActual = Math.max(1, inputLutealDays);
+        finalCycleLength = menstrualDaysActual + folicularDaysActual + ovulacionDaysActual + lutealDaysActual;
+    }
+    
+    const daysPerPhaseActual = [
+        menstrualDaysActual,
+        folicularDaysActual,
+        ovulacionDaysActual,
+        lutealDaysActual
+    ];
+
+    let currentDate = new Date(startDate);
+    let dayCounter = 0; 
+
+    daysPerPhaseActual.forEach((numDaysInPhase, phaseIndex) => {
+        const phaseData = phases[phaseIndex]; 
+        if (!phaseData) {
+            console.error(`No se encontraron datos para la fase con índice ${phaseIndex} en la array 'phases'.`);
+            return;
+        }
+        const phaseSpecificAdviceArray = phaseData.dias;
+        if (!phaseSpecificAdviceArray) {
+            console.error(`El array 'dias' no está definido para la fase: ${phaseData.name}`);
+            return;
+        }
+        const numAvailableAdvice = phaseSpecificAdviceArray.length;
+
+        for (let dayIndexInPhaseDisplay = 0; dayIndexInPhaseDisplay < numDaysInPhase && dayCounter < finalCycleLength; dayIndexInPhaseDisplay++, dayCounter++) {
+            let effectiveAdviceIndex = dayIndexInPhaseDisplay; 
+
+            if (numDaysInPhase < numAvailableAdvice) {
+                const takeFromStart = Math.ceil(numDaysInPhase / 2);
+                if (dayIndexInPhaseDisplay < takeFromStart) {
+                    effectiveAdviceIndex = dayIndexInPhaseDisplay;
+                } else {
+                    effectiveAdviceIndex = numAvailableAdvice - (numDaysInPhase - dayIndexInPhaseDisplay);
+                }
+            }
+            
+            const dayData = (effectiveAdviceIndex >= 0 && effectiveAdviceIndex < numAvailableAdvice) 
+                            ? phaseSpecificAdviceArray[effectiveAdviceIndex] 
+                            : null; 
+            
+            const card = document.createElement("div");
+            // card.className = `col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-4 d-flex`; 
+            // para mostrar 4 cards por fila en pantallas grandes y 2 en pantallas pequeñas
+            card.className = `col-12 col-sm-6 col-md-3 col-lg-3 col-xl-3 mb-4 d-flex`;
+            const dateForCard = new Date(currentDate);
+
+            card.innerHTML = `
+                <div class="card phase-card ${phaseData.class} w-100" data-bs-toggle="modal" data-bs-target="#infoModal"
+                     data-phase-index="${phaseIndex}"
+                     data-day-index-in-phase="${effectiveAdviceIndex}" 
+                     data-actual-day-of-phase="${dayIndexInPhaseDisplay + 1}"
+                     data-date="${dateForCard.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}">
+                  <div class="card-body d-flex flex-column">
+                    <p class="text-end small text-muted mb-0" style="font-size: 0.7rem; line-height: 1;">Ciclo Día: ${dayCounter + 1}</p> 
+                    <h5 class="card-title">${phaseData.icon} ${dateForCard.toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">${phaseData.name} - Día ${dayIndexInPhaseDisplay + 1}</h6>
+                    <p class="card-text mt-auto" style="font-size: 0.85em;">${((dayData && dayData.adviceDia) || phaseData.adviceGeneral).substring(0, 50)}...</p>
+                  </div>
+                </div>
+              `;
+            calendarContainer.appendChild(card);
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+    });
+}
+
+function handleFormSubmit(event) { // Esta es la función que se llama en el submit
+    event.preventDefault();
+    
+    const startDateEl = document.getElementById("startDate");
+    const cycleLengthEl = document.getElementById("cycleLength");
+    const bleedingDaysEl = document.getElementById("bleedingDays");
+    const folicularDaysInputEl = document.getElementById("follicularDaysInput");
+    const ovulationDaysInputEl = document.getElementById("ovulationDaysInput");
+    const lutealDaysInputEl = document.getElementById("lutealDaysInput");
+
+    // VERIFICACIÓN EXPLÍCITA DE CADA ELEMENTO DEL FORMULARIO
+    if (!startDateEl) { console.error("Elemento del formulario con ID 'startDate' NO ENCONTRADO."); alert("Error: Falta el campo de fecha de inicio."); return; }
+    if (!cycleLengthEl) { console.error("Elemento del formulario con ID 'cycleLength' NO ENCONTRADO."); alert("Error: Falta el campo de duración del ciclo."); return; }
+    if (!bleedingDaysEl) { console.error("Elemento del formulario con ID 'bleedingDays' NO ENCONTRADO."); alert("Error: Falta el campo de días de sangrado."); return; }
+    if (!folicularDaysInputEl) { console.error("Elemento del formulario con ID 'follicularDaysInput' NO ENCONTRADO."); alert("Error: Falta el campo de días foliculares."); return; }
+    if (!ovulationDaysInputEl) { console.error("Elemento del formulario con ID 'ovulationDaysInput' NO ENCONTRADO."); alert("Error: Falta el campo de días de ovulación."); return; }
+    if (!lutealDaysInputEl) { console.error("Elemento del formulario con ID 'lutealDaysInput' NO ENCONTRADO."); alert("Error: Falta el campo de días lúteos."); return; }
+
+    const startInputVal = startDateEl.value;
+    if (!startInputVal) {
+        alert("Por favor, selecciona la fecha de inicio del sangrado.");
+        return;
+    }
+
+    // Si todas las verificaciones pasan, entonces podemos leer .value
+    saveToLocal({
+        startDate: startInputVal,
+        cycleLength: cycleLengthEl.value,
+        bleedingDays: bleedingDaysEl.value,
+        folicularDaysInput: folicularDaysInputEl.value,
+        ovulationDaysInput: ovulationDaysInputEl.value,
+        lutealDaysInput: lutealDaysInputEl.value
+    });
+    generateCalendarAndDisplay();
+}
+
+function handleModalShow(event) {
+    if (typeof phases === 'undefined' || phases.length === 0) {
+        console.error("handleModalShow llamado antes de que 'phases' data esté definida o cargada.");
+        return;
+    }
+    const cardClicked = event.relatedTarget.closest(".phase-card");
+    if (!cardClicked) return;
+
+    const phaseIndex = parseInt(cardClicked.getAttribute("data-phase-index"));
+    const effectiveAdviceIndex = parseInt(cardClicked.getAttribute("data-day-index-in-phase"));
+    const actualDayOfPhase = cardClicked.getAttribute("data-actual-day-of-phase");
+    const date = cardClicked.getAttribute("data-date");
+
+    const phaseData = phases[phaseIndex]; 
+    if (!phaseData) {
+        console.error(`Datos de fase no encontrados para el índice: ${phaseIndex}`);
+        return;
+    }
+    const dayData = (phaseData.dias && effectiveAdviceIndex >= 0 && effectiveAdviceIndex < phaseData.dias.length) 
+                    ? phaseData.dias[effectiveAdviceIndex] 
+                    : null;
+
+    const modalTitleEl = document.getElementById("modalTitle");
+    const modalBodyEl = document.getElementById("modalBody");
+
+    if(!modalTitleEl || !modalBodyEl) {
+        console.error("Elementos del modal 'modalTitle' o 'modalBody' no encontrados.");
+        return;
+    }
+
+    modalTitleEl.innerHTML = `${phaseData.icon} ${phaseData.name} - Día ${actualDayOfPhase} <span class="day-of-phase-title">(${date})</span>`;
+    let modalBodyContent = "";
+
+    if (dayData && dayData.adviceDia) {
+        modalBodyContent += `<p><strong>Consejo del día:</strong> <em>${dayData.adviceDia}</em></p>`;
+    } else { 
+        modalBodyContent += `<p><strong>Consejo general de la fase ${phaseData.name}:</strong> <em>${phaseData.adviceGeneral}</em></p>`;
+        if (!dayData) { 
+            modalBodyEl.innerHTML = modalBodyContent;
+            return;
+        }
+    }
+    
+    const createList = (title, items) => {
+        if (items && items.length > 0) {
+            return `<h6>${title}:</h6><ul>${items.map(item => `<li>${item}</li>`).join('')}</ul>`;
+        }
+        return '';
+    };
+
+    if (dayData) {
+        modalBodyContent += createList("Qué hacer hoy", dayData.queHacer);
+        modalBodyContent += createList("Qué NO hacer hoy", dayData.queNoHacer);
+        modalBodyContent += createList("Qué evitar hoy", dayData.queEvitar);
+        modalBodyContent += createList("Ideas para regalarle hoy", dayData.queRegalar);
+        modalBodyContent += createList("Cómo actuar hoy", dayData.comoActuar);
+        modalBodyContent += createList("Qué NO decirle hoy", dayData.queNoDecir);
+        modalBodyContent += createList("Frases que puedes decirle a Rachel hoy", dayData.frasesParaRachel);
+    }
+
+    modalBodyEl.innerHTML = modalBodyContent;
+}
+
+// Adjuntar el manejador de eventos al formulario
+const cycleForm = document.getElementById("cycleForm");
+if (cycleForm) {
+    cycleForm.addEventListener("submit", handleFormSubmit);
+} else {
+    console.error("Elemento del formulario 'cycleForm' no encontrado al intentar adjuntar el listener.");
+}
+
+// Adjuntar el manejador de eventos al modal
+const infoModal = document.getElementById("infoModal");
+if (infoModal) {
+    infoModal.addEventListener("show.bs.modal", handleModalShow);
+} else {
+    console.error("Elemento del modal 'infoModal' no encontrado al intentar adjuntar el listener.");
+}
+
+// Cargar datos del localStorage cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', loadFromLocal);
+
+// ----- FIN DEL CÓDIGO JAVASCRIPT LÓGICO -----
+</script>
+</body>
+</html>
